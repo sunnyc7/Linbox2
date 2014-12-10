@@ -1,0 +1,137 @@
+#Password Block.
+BadLogonCount                      : 0
+badPasswordTime                    : 129978896037624664
+badPwdCount                        : 0
+CannotChangePassword               : False
+
+Enabled                            : True
+CanonicalName                      : nafa.local/NAFA/Phil Russo
+
+#Name Block
+GivenName                          : Phil
+Surname                            : Russo
+Title                              : 
+sn                                 : Russo
+CN                                 : Phil Russo
+Description                        : Executive Director
+Initials                           : 
+
+#Org Related
+Organization                       : 
+Company                            : 
+Department                         : 
+Division                           : 
+EmployeeID                         : 
+EmployeeNumber                     : 
+Manager                            : 
+
+#Address and Phone number
+OfficePhone                        : 609-986-1055
+MobilePhone                        : 
+Fax                                : 
+telephoneNumber                    : 609-986-1055
+Office                             : 
+HomePhone                          : 
+StreetAddress                      : 
+City                               : 
+State                              : 
+PostalCode                         : 
+Country                            : 
+
+#AD Block
+ObjectClass                        : user
+UserPrincipalName                  : prusso@nafa.local
+ProtectedFromAccidentalDeletion    : False
+PrimaryGroup                       : CN=Domain Users,CN=Users,DC=nafa,DC=local
+DisplayName                        : Phil Russo
+DistinguishedName                  : CN=Phil Russo,OU=NAFA,DC=nafa,DC=local
+nTSecurityDescriptor               : System.DirectoryServices.ActiveDirectorySecurity
+ObjectCategory                     : CN=Person,CN=Schema,CN=Configuration,DC=nafa,DC=local
+SmartcardLogonRequired             : False
+
+#Home Dir
+HomeDirectory                      : \\NAFASBS\RedirectedFolders\prusso
+HomedirRequired                    : False
+HomeDrive                          : U:
+
+#Exchange
+EmailAddress                       : prusso@nafa.org
+mail                               : prusso@nafa.org
+SamAccountName                     : prusso
+mailNickname                       : prusso
+ServicePrincipalNames              : {}
+
+#Exchange: CLONE
+msExchUserCulture                  : en-US
+legacyExchangeDN                   : /o=First Organization/ou=first administrative group/cn=Recipients/cn=prusso
+homeMDB                            : CN=Mailbox Database 2011081919,CN=Databases,CN=Exchange Administrative Group (FYDI
+                                     BOHF23SPDLT),CN=Administrative Groups,CN=First Organization,CN=Microsoft Exchange,
+                                     CN=Services,CN=Configuration,DC=nafa,DC=local
+homeMTA                            : CN=Microsoft MTA,CN=NAFASBS,CN=Servers,CN=Exchange Administrative Group (FYDIBOHF2
+                                     3SPDLT),CN=Administrative Groups,CN=First Organization,CN=Microsoft Exchange,CN=Se
+                                     rvices,CN=Configuration,DC=nafa,DC=local
+managedObjects                     : {CN=Board of Trustees,OU=NAFA,DC=nafa,DC=local}
+
+#Exchange Quotas : CLONE
+mDBOverHardQuotaLimit              : 5452596
+mDBOverQuotaLimit                  : 5242880
+mDBStorageQuota                    : 4718592
+mDBUseDefaults                     : False
+
+#Exchange Group Membership : CLONE
+MemberOf                           : {CN=Windows SBS Admin Tools Group,OU=Security Groups,OU=MyBusiness,DC=nafa,DC=loca
+                                     l, CN=Windows SBS Link Users,OU=Security Groups,OU=MyBusiness,DC=nafa,DC=local, CN
+                                     =Windows SBS SharePoint_OwnersGroup,OU=Security Groups,OU=MyBusiness,DC=nafa,DC=lo
+                                     cal, CN=All Users,OU=Distribution Groups,OU=MyBusiness,DC=nafa,DC=local, CN=Window
+                                     s SBS Virtual Private Network Users,OU=Security Groups,OU=MyBusiness,DC=nafa,DC=lo
+                                     cal, CN=Windows SBS Fax Administrators,OU=Security Groups,OU=MyBusiness,DC=nafa,DC
+                                     =local, CN=Windows SBS Fax Users,OU=Security Groups,OU=MyBusiness,DC=nafa,DC=local
+                                     , CN=Windows SBS Remote Web Access Users,OU=Security Groups,OU=MyBusiness,DC=nafa,
+                                     DC=local, CN=Discovery Management,OU=Microsoft Exchange Security Groups,DC=nafa,DC
+                                     =local, CN=Recipient Management,OU=Microsoft Exchange Security Groups,DC=nafa,DC=l
+                                     ocal, CN=Board of Trustees,OU=NAFA,DC=nafa,DC=local, CN=Staff,OU=NAFA,DC=nafa,DC=l
+                                     ocal, CN=Office Staff,OU=NAFA,DC=nafa,DC=local, CN=ServerAccess,OU=NAFA,DC=nafa,DC
+                                     =local, CN=Administrators,CN=Builtin,DC=nafa,DC=local, CN=Schema Admins,CN=Users,D
+                                     C=nafa,DC=local...}
+
+# Mailbox Management Policy (MRM / Maanaged Folders) : CLONE
+msExchPoliciesIncluded             : {d586387d-d167-4449-a7c0-629cb3bb23c4, {26491cfc-9e50-4857-861b-0cb8df22b5d7}}
+msExchRBACPolicyLink               : CN=Default Role Assignment Policy,CN=Policies,CN=RBAC,CN=First Organization,CN=Mic
+                                     rosoft Exchange,CN=Services,CN=Configuration,DC=nafa,DC=local
+
+#Address Book Membership: CLONE
+showInAddressBook                  : {CN=Default Global Address List,CN=All Global Address Lists,CN=Address Lists Conta
+                                     iner,CN=First Organization,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=n
+                                     afa,DC=local, CN=All Users,CN=All Address Lists,CN=Address Lists Container,CN=Firs
+                                     t Organization,CN=Microsoft Exchange,CN=Services,CN=Configuration,DC=nafa,DC=local
+                                     }
+
+
+--
+http://blog.outsidesys.com/
+http://blogs.msdn.com/b/powershell/archive/2010/05/07/select-string-context.aspx
+Logic:
+#Split AD+Mailbox Values with Quotas
+#Include Random Password Generator for provisioning.
+#https://gist.github.com/1993312
+$userList = get-content c:\names.csv
+
+foreach ($user in $userList) {
+Get-AdUser TemplateUser | Set-NewArtioUserADExchange $user
+
+#Set Group Memberships
+#http://bradkingsley.com/using-powershell-to-list-group-membership-from-active-directory-ad/
+Get-Adgroupmember TemplateUser | Set-AdGroupmember $user
+
+#Set home folder in DFS and Appropriate ACL's
+# http://www.coretekservices.com/2012/09/13/scripted-home-folder-management-with-powershell-pt-3/
+# http://www.coretekservices.com/2012/09/06/scripted-home-folder-management-with-powershell-pt-2/
+# http://technet.microsoft.com/en-us/magazine/2009.05.powershell.aspx
+Get-AdUser $user | Set-DFSandACL $user
+
+#Set Printer
+
+#Validate if all fields were copied successfully.
+Compare-ArtioUser templateuser $user
+
+}
